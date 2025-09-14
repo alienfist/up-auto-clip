@@ -8,7 +8,7 @@ from typing import List, Dict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from logger import logger
 from utils.video_tool import extract_video_frames_use_thread, get_video_fps
-from utils.gpt_tool import analyze_image
+from utils.gpt_tool import analyze_image, analyze_multi_images
 
 
 def _analyze_frame_in_thread(frame_data: tuple) -> Dict | None:
@@ -35,11 +35,11 @@ def _analyze_frame_in_thread(frame_data: tuple) -> Dict | None:
         return None
 
 
-def analyze_video_frames(video_path: str, interval: int = 1, max_workers: int = 6, clear_cache: bool = False) -> List[Dict] | None:
+def analyze_video_frames(video_path: str, interval: int = 0, max_workers: int = 6, clear_cache: bool = False) -> List[Dict] | None:
     """Analyze video frames
     Args:
         video_path: video path
-        interval: analysis interval (seconds), default 1
+        interval: analysis interval (seconds), default 0
         max_workers: maximum number of threads, default 6
         clear_cache: whether to clear cache, defalt False
     Returns: List[Dict]
@@ -151,3 +151,13 @@ def analyze_video_frames(video_path: str, interval: int = 1, max_workers: int = 
     except Exception as e:
         logger.error(f"analyze video frames failed: {str(e)}")
         return None
+
+
+def analyze_video_multi_frames(video_path: str):
+    """analyze multi video frames
+    Args:
+        image_paths (list): image path list
+    Returns:
+        dict: {"desc": "", "tag": []}
+    """
+    pass

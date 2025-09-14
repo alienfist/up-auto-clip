@@ -6,7 +6,7 @@ import re
 import ollama
 import json
 import base64
-from .common import retry_decorator
+from utils.common import retry_decorator
 from config import OLLAMA_HOST, OLLAMA_VISION_MODEL, OLLAMA_CHAT_MODEL, DEFAULT_PROMPT, DEFAULT_LANGUAGE
 from logger import logger
 
@@ -15,7 +15,7 @@ client = ollama.Client(host=OLLAMA_HOST)
 
 
 @retry_decorator(max_retries=3, delay=1)
-def analyze_image(image_path, prompt=None, role_desc=None):
+def analyze_image(image_path: str, prompt=None, role_desc=None):
     """analyze image
     Args:
         image_paths (list): image path list
@@ -34,7 +34,7 @@ def analyze_image(image_path, prompt=None, role_desc=None):
             image_data = base64.b64encode(f.read()).decode('utf-8')
         
         if not prompt:
-            prompt = DEFAULT_PROMPT["vision"][DEFAULT_LANGUAGE]
+            prompt = DEFAULT_PROMPT["one_frame"][DEFAULT_LANGUAGE]
         response = client.chat(
             model=OLLAMA_VISION_MODEL,
             messages=[
@@ -46,6 +46,63 @@ def analyze_image(image_path, prompt=None, role_desc=None):
                     'role': 'user',
                     'content': prompt,
                     'images': [image_data]
+                }
+            ],
+            format='json'
+        )
+
+        result_text = response['message']['content'].strip()
+        try:
+            result = json.loads(result_text)
+            if 'desc' not in result or 'tag' not in result:
+                logger.error(f"analyze image error:{result_text}")
+                return None
+
+            return result
+        except json.JSONDecodeError:
+            logger.error(f"analyze image error:{result_text}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"analyze image error:{e}")
+        return None
+
+
+@retry_decorator(max_retries=3, delay=1)
+def analyze_multi_images(image_paths: list, prompt=None, role_desc=None):
+    """analyze multi images
+    Args:
+        image_paths (list): image path list
+    Returns:
+        dict: {"desc": "", "tag": []}
+    """
+    try:
+        if not role_desc:
+            role_desc = DEFAULT_PROMPT["role_desc"][DEFAULT_LANGUAGE]
+        
+        images_data = []
+        for image_path in image_paths:
+            if not os.path.isfile(image_path):
+                logger.error(f"image not exist:{image_path}")
+                return None
+
+            with open(image_path, 'rb') as f:
+                image_data = base64.b64encode(f.read()).decode('utf-8')
+            images_data.append(image_data)
+        
+        if not prompt:
+            prompt = DEFAULT_PROMPT["multi_frame"][DEFAULT_LANGUAGE]
+        response = client.chat(
+            model=OLLAMA_VISION_MODEL,
+            messages=[
+                {
+                    'role': 'system',
+                    'content': role_desc
+                },
+                {
+                    'role': 'user',
+                    'content': prompt,
+                    'images': images_data
                 }
             ],
             format='json'

@@ -24,19 +24,48 @@ DEFAULT_PROMPT = {
         "zh": """你是一个专业的视频编辑。""",
         "en": """You are a professional video editor."""
     },
-    "vision": {
-        "zh": """请分析这张图片，并以JSON格式返回结果，包含以下字段：
+    "one_frame": {
+        "zh": """请分析这张图片,并以JSON格式返回结果,包含以下字段:
             - desc: 图片的详细描述（中文）
-            - tag: 能代表图片具体特征的标签列表（中文）
-        请直接返回JSON格式，不要包含其他文字。
-        示例格式：{"desc": "一个美丽的少女长发飘飘走在绿色的草地上", "tag": ["少女", "长发", "草地", "美丽", "人物"]}""",
-
+            - tag: 能代表图片具体特征的标签列表,
+                tag必须包含镜头元素(近景、远景、中景)
+                tag必须包含主体元素(人物、动物、车辆等)
+                tag必须包含场景元素(城市、乡村、 自然风光等)
+        请直接返回JSON格式,不要包含其他文字。
+        示例格式：{
+            "desc": "一个美丽的少女长发飘飘走在绿色的草地上...", 
+            "tag": ["近景", "少女", "长发", "草地", "美丽", "人物", "自然风光"]
+        }""",
         "en": """Please analyze this image and return the result in JSON format, containing the following fields:
             - desc: A detailed description of the image (in English)
             - tag: A list of tags that represent the specific features of the image (in English)
+                tag must contain lens element (near, far, medium)
+                tag must contain subject element (person, animal, vehicle, etc.)
+                tag must contain scene element (city, countryside, nature, etc.)
         Please return the JSON format directly, without any additional text.
-        Example format: {"desc": "A cute cat sitting on the window sill", "tag": ["cat", "pet", "window sill", "cute"]}"""
+        Example format: {
+            "desc": "A beautiful young girl with long hair is walking on the green grass...", 
+            "tag": ["close-up", "young girl", "long hair", "grassland", "beautiful", "person", "natural scenery"]
+        }"""
     },
+    "multi_frame": {
+        "zh": """这一组连贯的图片是一个视频的每秒连续帧，请分析这一组图片，并以JSON格式返回结果，包含以下字段：
+            - desc: 通过这一组视频图片，对这个视频做出详细的描述（中文）
+            - tag: 能代表这一组视频图片的具体特征的标签列表（中文）
+        请直接返回JSON格式，不要包含其他文字。
+        示例格式：{
+            "desc": "A beautiful young girl with long hair walked on the green grass, bent down to pick up a leaf on the ground, and then jumped happily and ran away.", 
+            "tag": ["少女", "长发", "草地", "美丽", "人物"]
+        }""",
+        "en": """Please analyze this group of video frames and return the result in JSON format, containing the following fields:
+            - desc: A detailed description of the video (in English)
+            - tag: A list of tags that represent the specific features of the video (in English)
+        Please return the JSON format directly, without any additional text.
+        Example format: {
+            "desc": "A cute cat sitting on the window sill", 
+            "tag": ["close-up", "young girl", "long hair", "grassland", "beautiful", "person", "natural scenery"]
+        }"""
+    }
 }
 
 # music api config
