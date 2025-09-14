@@ -1,15 +1,11 @@
 # -*- coding: UTF-8 -*-
-# test_pixabay_images.py
-# Test Pixabay image search and download functionality
+# test_image_api.py
 
 import os
 import sys
-
-# Add project root directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from utils.pic_tool import PixabayAPI, search_and_download_image
-from logger import logger
+
 
 def test_pixabay_api():
     """Test Pixabay API functionality"""

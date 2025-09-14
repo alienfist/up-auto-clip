@@ -1,12 +1,11 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# test_music_api.py
 
 import os
 import sys
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from utils.music_tool import get_music_by_style
+
 
 def test_music_apis():
     """Test different music APIs"""

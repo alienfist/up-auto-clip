@@ -154,11 +154,12 @@ def analyze_video_frames(video_path: str, interval: int = 0, max_workers: int = 
         return None
 
 
-def analyze_video_multi_frames(video_path: str, interval: int = 0):
+def analyze_video_multi_frames(video_path: str, interval: int = 0, target_width: int = 480):
     """analyze multi video frames
     Args:
         video_path (str): video path
         interval (int): interval seconds
+        target_width (int): target width for resizing frames to reduce token usage, default 480
     Returns:
         dict: {"desc": "", "tag": [], "duration": 0, "fps": 0, "total_frames": 0, "analyzed_frames": 0, "frames": []}
     """
@@ -195,8 +196,17 @@ def analyze_video_multi_frames(video_path: str, interval: int = 0):
                 logger.warning(f"failed to read frame at second {second}, frame number: {frame_number}")
                 continue
             
-            # frame to base64
-            _, buffer = cv2.imencode('.jpg', frame)
+            # resize frame to reduce token usage
+            height, width = frame.shape[:2]
+            if width > target_width:
+                # calculate new height maintaining aspect ratio
+                new_height = int(height * target_width / width)
+                frame = cv2.resize(frame, (target_width, new_height), interpolation=cv2.INTER_AREA)
+                logger.debug(f"resized frame from {width}x{height} to {target_width}x{new_height}")
+            
+            # frame to base64 with optimized quality
+            encode_params = [cv2.IMWRITE_JPEG_QUALITY, 85]  # reduce quality to further reduce size
+            _, buffer = cv2.imencode('.jpg', frame, encode_params)
             frame_base64 = base64.b64encode(buffer).decode('utf-8')
             images_data.append(frame_base64)
         
