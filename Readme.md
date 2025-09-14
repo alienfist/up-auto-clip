@@ -1,5 +1,7 @@
 # 🎬 UP AUTO CLIP
 
+**Language**: English | [中文](./Readme_zh.md)
+
 > Fully localized automated video processing and editing tool, mainly for saving money, saving money, and saving money again
 The project is not yet completed, and the project code is currently being organized ..
 
@@ -11,14 +13,14 @@ The project is not yet completed, and the project code is currently being organi
 - [√] Generate video descriptions and tags, stored in JSON format
 
 ### 📝 Step 2: Intelligent Script Generation ⏳
-- [x] Generate complete scripts based on specified themes using dialogue models
-- [x] Intelligently match script content with video segment descriptions and tags
-- [x] Automatically generate optimal video splicing solutions
+- [ ] Generate complete scripts based on specified themes using dialogue models
+- [ ] Intelligently match script content with video segment descriptions and tags
+- [ ] Automatically generate a lot of video splicing solutions
 
 ### 🎵 Step 3: Automated Post-Production ⏳
-- [x] AI voice dubbing based on text content
-- [x] Intelligent matching of theme background music
-- [x] Automatic video transitions and splicing, output complete finished videos
+- [ ] AI voice dubbing based on text content
+- [ ] Intelligent matching of theme background music
+- [ ] Automatic video transitions and splicing, output complete finished videos
 
 ## 💻 System Requirements
 
