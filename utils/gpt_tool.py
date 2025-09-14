@@ -69,26 +69,16 @@ def analyze_image(image_path: str, prompt=None, role_desc=None):
 
 
 @retry_decorator(max_retries=3, delay=1)
-def analyze_multi_images(image_paths: list, prompt=None, role_desc=None):
+def analyze_multi_images(images_data: list, prompt=None, role_desc=None):
     """analyze multi images
     Args:
-        image_paths (list): image path list
+        images_data (list): image data list
     Returns:
         dict: {"desc": "", "tag": []}
     """
     try:
         if not role_desc:
             role_desc = DEFAULT_PROMPT["role_desc"][DEFAULT_LANGUAGE]
-        
-        images_data = []
-        for image_path in image_paths:
-            if not os.path.isfile(image_path):
-                logger.error(f"image not exist:{image_path}")
-                return None
-
-            with open(image_path, 'rb') as f:
-                image_data = base64.b64encode(f.read()).decode('utf-8')
-            images_data.append(image_data)
         
         if not prompt:
             prompt = DEFAULT_PROMPT["multi_frame"][DEFAULT_LANGUAGE]

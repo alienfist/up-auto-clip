@@ -1,5 +1,6 @@
 import os
 import shutil
+import base64
 import time
 import json
 import math
@@ -153,11 +154,77 @@ def analyze_video_frames(video_path: str, interval: int = 0, max_workers: int = 
         return None
 
 
-def analyze_video_multi_frames(video_path: str):
+def analyze_video_multi_frames(video_path: str, interval: int = 0):
     """analyze multi video frames
     Args:
-        image_paths (list): image path list
+        video_path (str): video path
+        interval (int): interval seconds
     Returns:
-        dict: {"desc": "", "tag": []}
+        dict: {"desc": "", "tag": [], "duration": 0, "fps": 0, "total_frames": 0, "analyzed_frames": 0, "frames": []}
     """
-    pass
+    try:
+        if not os.path.exists(video_path):
+            logger.error(f"video file not exists: {video_path}")
+            return None
+        
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            logger.error(f"open video file failed: {video_path}")
+            return None
+        
+        fps = get_video_fps(video_path)
+        if fps is None:
+            logger.error(f"get video fps failed: {video_path}")
+            cap.release()
+            return None
+        
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        duration = int(total_frames / fps)
+        
+        images_data = []
+        for second in range(0, duration, interval + 1 if interval > 0 else 1):
+            # set frame number
+            frame_number = second * fps
+            if frame_number >= total_frames:
+                break
+                
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+            ret, frame = cap.read()
+            
+            if not ret:
+                logger.warning(f"failed to read frame at second {second}, frame number: {frame_number}")
+                continue
+            
+            # frame to base64
+            _, buffer = cv2.imencode('.jpg', frame)
+            frame_base64 = base64.b64encode(buffer).decode('utf-8')
+            images_data.append(frame_base64)
+        
+        cap.release()
+        logger.info(f"extracted {len(images_data)} frames from video, duration: {duration}s")
+        
+        res_analyze = analyze_multi_images(images_data)
+        if not res_analyze:
+            logger.error(f"analyze multi images failed")
+            return None
+
+        desc = res_analyze.get("desc", "")
+        tag = res_analyze.get("tag", [])
+        if not tag:
+            tag = ["video_frames", "base64_encoded"]
+
+        video_info = {
+            "desc": desc,
+            "tag": tag,
+            "duration": duration,
+            "fps": fps,
+            "total_frames": total_frames,
+            "analyzed_frames": len(images_data)
+        }
+        
+        return video_info
+    except Exception as e:
+        logger.error(f"analyze video multi frames failed: {str(e)}")
+        if 'cap' in locals():
+            cap.release()
+        return None
