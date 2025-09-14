@@ -1,0 +1,9 @@
+ollama
+pydub
+scenedetect
+ffmpeg-python
+opencv-python
+edge-tts
+Pillow
+python-dotenv
+requests
