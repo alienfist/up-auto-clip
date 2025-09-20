@@ -39,8 +39,8 @@ ollama run qwen2.5vl
 
 ### 对话模型
 ```bash
-# 安装 deepseek-r1:8b 对话模型
-ollama run deepseek-r1:8b
+# 安装 qwen3:14b 对话模型
+ollama run qwen3:14b
 ```
 
 # 背景音乐API配置说明

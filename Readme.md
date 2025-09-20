@@ -39,8 +39,8 @@ ollama run qwen2.5vl
 
 ### Dialogue Model
 ```bash
-# Install deepseek-r1:8b dialogue model
-ollama run deepseek-r1:8b
+# Install qwen3:14b dialogue model
+ollama run qwen3:14b
 ```
 
 # Background Music API Configuration

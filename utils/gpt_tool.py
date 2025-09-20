@@ -7,8 +7,8 @@ import ollama
 import json
 import base64
 from utils.common import retry_decorator
-from config import OLLAMA_HOST, OLLAMA_VISION_MODEL, OLLAMA_CHAT_MODEL, DEFAULT_LANGUAGE
-from prompt import DEFAULT_PROMPT
+from config import OLLAMA_HOST, OLLAMA_VISION_MODEL, OLLAMA_CHAT_MODEL, DEFAULT_LANGUAGE, OLLAMA_OPTIONS
+from sys_prompts import DEFAULT_PROMPT
 from logger import logger
 
 
@@ -133,11 +133,11 @@ def analyze_multi_images(images_data: list, prompt=None, role_desc=None):
 
 
 @retry_decorator(max_retries=3, delay=2)
-def get_gpt_response(prompt, format='', role_desc=None):
+def get_gpt_response(prompt, response_format='', role_desc=None):
     """get gpt response
     Args:
         prompt (str): prompt
-        format (str, optional): format. Defaults to 'text'.
+        response_format (str, optional): format. Defaults to ''.
     Returns:
         str: response
     """
@@ -157,17 +157,38 @@ def get_gpt_response(prompt, format='', role_desc=None):
                     'content': prompt
                 }
             ],
-            format=format
+            format=response_format,
+            options=OLLAMA_OPTIONS,
         )
-        if format == 'json':
-            model_response = response['message']['content'].strip()
-            result = json.loads(model_response)
-            return result
-        else:
-            model_response = response['message']['content'].strip()
-            final_answer = re.sub(r'<think>.*?</think>\s*', '', model_response, flags=re.DOTALL).strip()
-            return final_answer
+        result_text = response['message']['content'].strip()
+        try:
+            if response_format:
+                result = json.loads(result_text)
+                return result
+            else:
+                # remove think content
+                result_text = remove_think_tags(result_text)
+                return result_text
+        except json.JSONDecodeError:
+            logger.error(f"get gpt response error:{result_text}")
+            return None
 
     except Exception as e:
         logger.error(f"get gpt response error:{e}")
         raise e
+
+
+def remove_think_tags(text):
+    """remove think tags
+    Args:
+        text (str): text
+    Returns:
+        str: cleaned text
+    """
+    try:
+        cleaned_text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
+        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+        return cleaned_text
+    except Exception as e:
+        logger.error(f"remove think tags error:{e}")
+        return text

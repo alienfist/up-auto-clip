@@ -2,15 +2,21 @@
 # main.py
 
 import json
+from typing import List
+from pydantic import BaseModel
+
 from utils.video_tool import split_video_by_scenes, is_valid_video
 from utils.common import get_md5
+from utils.gpt_tool import get_gpt_response
 from analysisi_video import analyze_video_multi_frames
-from config import TEMP_DIR
+from config import TEMP_DIR, DEFAULT_LANGUAGE
+from sys_prompts import DEFAULT_PROMPT
 from logger import logger
 
 
-def preprocess_video(video_path):
+def preprocess_video_segment(video_path, video_segment_info_json_path=None):
     """preprocess video
+    split video by scene and get video clip info
     Args:
         video_path (str): video path
     Returns:
@@ -37,11 +43,39 @@ def preprocess_video(video_path):
         print(video_info)
         video_segment_info_list.append(video_info)
 
-    with open(f"{output_folder}video_info.json", 'w', encoding='utf-8') as f:
+    if not video_segment_info_json_path:
+        video_segment_info_json_path = f"{output_folder}video_segment_info.json"
+    with open(video_segment_info_json_path, 'w', encoding='utf-8') as f:
         f.write(json.dumps(video_segment_info_list, ensure_ascii=False, indent=2))
-    return f"{output_folder}video_info.json"
+    return video_segment_info_json_path
         
+
+def get_video_script(video_segment_info_json_path, video_script_json_path=None):
+    with open(video_segment_info_json_path, 'r', encoding='utf-8') as f:
+        video_segment_info_list = f.read()
+    role_desc = "你是一个专业的短视频编辑和脚本策划师，擅长根据视频内容创作吸引人的短视频脚本。"
+    prompt = DEFAULT_PROMPT['video_script'][DEFAULT_LANGUAGE].format(video_segment_info_list=video_segment_info_list)
+    class VideoClip(BaseModel):
+        start: float
+        end: float
+        screen_text: str
+        narration: str
+    class VideoClipArray(BaseModel):
+        video_clips: List[VideoClip]
+    script = get_gpt_response(prompt, response_format=VideoClipArray.model_json_schema(), role_desc=role_desc)
+    if script:
+        if not video_script_json_path:
+            video_script_json_path = video_segment_info_json_path.replace('video_segment_info.json', 'video_script.json')
+        with open(video_script_json_path, 'w', encoding='utf-8') as f:
+            f.write(json.dumps(script['video_clips'], ensure_ascii=False, indent=2))
+        return script['video_clips']
+    return None
     
+
 if __name__ == "__main__":
     video_path = f"{TEMP_DIR}test.webm"
-    preprocess_video(video_path)
+    # preprocess video segment: get video segmemt info 
+    video_segment_info_json_path = preprocess_video_segment(video_path)
+    # get video script by video segment info
+    video_script = get_video_script(video_segment_info_json_path)
+    print(video_script)

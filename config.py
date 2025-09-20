@@ -13,7 +13,15 @@ RESOURCE_DIR = f"{PROJECT_FOLDER}resource/"
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
 OLLAMA_VISION_MODEL = 'qwen2.5vl'
-OLLAMA_CHAT_MODEL = 'deepseek-r1:8b'
+OLLAMA_CHAT_MODEL = 'qwen3:14b'
+
+# Ollama模型参数配置
+OLLAMA_OPTIONS = {
+    "num_ctx": int(os.getenv("OLLAMA_NUM_CTX", "8192")), 
+    "temperature": float(os.getenv("OLLAMA_TEMPERATURE", "0.7")), 
+    "top_p": float(os.getenv("OLLAMA_TOP_P", "0.9")),
+    "top_k": int(os.getenv("OLLAMA_TOP_K", "40")),
+}
 
 # default video language
 DEFAULT_LANGUAGE = os.getenv("DEFAULT_LANGUAGE", "zh")
