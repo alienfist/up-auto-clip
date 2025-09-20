@@ -13,8 +13,8 @@ The project is not yet completed, and the project code is currently being organi
 - [√] Generate video descriptions and tags, stored in JSON format
 
 ### 📝 Step 2: Intelligent Script Generation ⏳
-- [ ] Generate complete scripts based on specified themes using dialogue models
-- [ ] Intelligently match script content with video segment descriptions and tags
+- [√] Generate complete scripts based on specified themes using dialogue models
+- [√] Intelligently match script content with video segment descriptions and tags
 - [ ] Automatically generate a lot of video splicing solutions
 
 ### 🎵 Step 3: Automated Post-Production ⏳
