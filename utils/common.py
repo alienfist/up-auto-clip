@@ -4,6 +4,8 @@
 import os
 import time
 import math
+import hashlib
+from datetime import datetime
 from functools import wraps
 from typing import Any, Callable
 
@@ -28,7 +30,7 @@ def retry_decorator(max_retries: int = 3, delay: float = 1.0):
                     if retries == max_retries:
                         raise e
                     time.sleep(delay)
-            return None
+            # 这行代码理论上永远不会执行到，因为循环要么返回要么抛异常
         return wrapper
     return decorator
 
@@ -66,3 +68,22 @@ def ms_to_str(ms):
     except Exception as e:
         print(e)
         return None
+
+
+def get_md5(text, num=20):
+    """md5 string
+    Args:
+        text (str): text
+        num (int, optional): num. Defaults to 20.
+    Returns:
+        str: md5
+    """
+    try:
+        m = hashlib.md5(text.encode(encoding='UTF-8')).hexdigest()
+        res = m[0:num]
+        return res
+    except Exception as e:
+        print(e)
+        time_str = datetime.now().strftime("%Y%m%d%H%M%s")
+        res = time_str[:num]
+        return res

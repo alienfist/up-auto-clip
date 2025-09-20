@@ -11,10 +11,10 @@ from config import OLLAMA_HOST, OLLAMA_VISION_MODEL, OLLAMA_CHAT_MODEL, DEFAULT_
 from logger import logger
 
 
-client = ollama.Client(host=OLLAMA_HOST)
+client = ollama.Client(host=OLLAMA_HOST, timeout=60)
 
 
-@retry_decorator(max_retries=3, delay=1)
+@retry_decorator(max_retries=3, delay=2)
 def analyze_image(image_path: str, prompt=None, role_desc=None):
     """analyze image
     Args:
@@ -28,7 +28,7 @@ def analyze_image(image_path: str, prompt=None, role_desc=None):
         
         if not os.path.isfile(image_path):
             logger.error(f"image not exist:{image_path}")
-            return None
+            raise FileNotFoundError(f"Image file not found: {image_path}")
 
         with open(image_path, 'rb') as f:
             image_data = base64.b64encode(f.read()).decode('utf-8')
@@ -52,23 +52,19 @@ def analyze_image(image_path: str, prompt=None, role_desc=None):
         )
 
         result_text = response['message']['content'].strip()
-        try:
-            result = json.loads(result_text)
-            if 'desc' not in result or 'tag' not in result:
-                logger.error(f"analyze image error:{result_text}")
-                return None
-
-            return result
-        except json.JSONDecodeError:
+        result = json.loads(result_text)
+        if 'desc' not in result or 'tag' not in result:
             logger.error(f"analyze image error:{result_text}")
-            return None
+            raise ValueError(f"Invalid result format: {result_text}")
+
+        return result
             
     except Exception as e:
         logger.error(f"analyze image error:{e}")
-        return None
+        raise e
 
 
-@retry_decorator(max_retries=3, delay=1)
+@retry_decorator(max_retries=3, delay=2)
 def analyze_multi_images(images_data: list, prompt=None, role_desc=None):
     """analyze multi images
     Args:
@@ -82,6 +78,12 @@ def analyze_multi_images(images_data: list, prompt=None, role_desc=None):
         
         if not prompt:
             prompt = DEFAULT_PROMPT["multi_frame"][DEFAULT_LANGUAGE]
+         
+        logger.info(f"start analyze {len(images_data)} images...")
+
+        total_size = sum(len(img) for img in images_data)
+        logger.info(f"images data total size: {total_size / 1024 / 1024:.2f} MB")
+        
         response = client.chat(
             model=OLLAMA_VISION_MODEL,
             messages=[
@@ -97,7 +99,8 @@ def analyze_multi_images(images_data: list, prompt=None, role_desc=None):
             ],
             format='json'
         )
-
+        
+        logger.info(f"ollama response success, start parse result...")
         result_text = response['message']['content'].strip()
         try:
             result = json.loads(result_text)
@@ -110,12 +113,25 @@ def analyze_multi_images(images_data: list, prompt=None, role_desc=None):
             logger.error(f"analyze image error:{result_text}")
             return None
             
+    except ollama.ResponseError as e:
+        logger.error(f"ollama response error: {e}")
+        raise e
+    except ollama.RequestError as e:
+        logger.error(f"ollama request error: {e}")
+        raise e
+    except TimeoutError as e:
+        logger.error(f"ollama request timeout: {e}")
+        raise e
+    except json.JSONDecodeError as e:
+        logger.error(f"json decode error: {e}")
+        raise e
     except Exception as e:
         logger.error(f"analyze image error:{e}")
-        return None
+        logger.error(f"exception type: {type(e).__name__}")
+        raise e
 
 
-@retry_decorator(max_retries=3, delay=1)
+@retry_decorator(max_retries=3, delay=2)
 def get_gpt_response(prompt, format='', role_desc=None):
     """get gpt response
     Args:
@@ -144,12 +160,8 @@ def get_gpt_response(prompt, format='', role_desc=None):
         )
         if format == 'json':
             model_response = response['message']['content'].strip()
-            try:
-                result = json.loads(model_response)
-                return result
-            except json.JSONDecodeError:
-                logger.error(f"get gpt response error:{model_response}")
-                return None
+            result = json.loads(model_response)
+            return result
         else:
             model_response = response['message']['content'].strip()
             final_answer = re.sub(r'<think>.*?</think>\s*', '', model_response, flags=re.DOTALL).strip()
@@ -157,4 +169,4 @@ def get_gpt_response(prompt, format='', role_desc=None):
 
     except Exception as e:
         logger.error(f"get gpt response error:{e}")
-        return None
+        raise e

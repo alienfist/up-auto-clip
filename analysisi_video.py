@@ -1,3 +1,6 @@
+# -*- coding: UTF-8 -*-
+# analysisi_video.py
+
 import os
 import shutil
 import base64
@@ -56,7 +59,7 @@ def analyze_video_frames(video_path: str, interval: int = 0, max_workers: int = 
             shutil.rmtree(frames_folder, ignore_errors=True)
         os.makedirs(frames_folder, exist_ok=True)
         
-        # 获取视频信息
+        # get video info
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             logger.error(f"open video file failed: {video_path}")
@@ -124,7 +127,7 @@ def analyze_video_frames(video_path: str, interval: int = 0, max_workers: int = 
                     if result:
                         results.append(result)
                 except Exception as e:
-                    logger.error(f"处理帧 {frame_path} 的结果时出错: {str(e)}")
+                    logger.error(f"analyze frame {frame_path} failed: {str(e)}")
         
         # sort results by second and frame
         results.sort(key=lambda x: (x['second'], x['frame']))
@@ -154,12 +157,12 @@ def analyze_video_frames(video_path: str, interval: int = 0, max_workers: int = 
         return None
 
 
-def analyze_video_multi_frames(video_path: str, interval: int = 0, target_width: int = 480):
+def analyze_video_multi_frames(video_path: str, interval: int = 0, target_width: int = 320):
     """analyze multi video frames
     Args:
         video_path (str): video path
         interval (int): interval seconds
-        target_width (int): target width for resizing frames to reduce token usage, default 480
+        target_width (int): target width for resizing frames to reduce token usage, default 320
     Returns:
         dict: {"desc": "", "tag": [], "duration": 0, "fps": 0, "total_frames": 0, "analyzed_frames": 0, "frames": []}
     """
@@ -205,10 +208,13 @@ def analyze_video_multi_frames(video_path: str, interval: int = 0, target_width:
                 logger.debug(f"resized frame from {width}x{height} to {target_width}x{new_height}")
             
             # frame to base64 with optimized quality
-            encode_params = [cv2.IMWRITE_JPEG_QUALITY, 85]  # reduce quality to further reduce size
+            encode_params = [cv2.IMWRITE_JPEG_QUALITY, 70]  # further reduce quality to minimize size
             _, buffer = cv2.imencode('.jpg', frame, encode_params)
             frame_base64 = base64.b64encode(buffer).decode('utf-8')
             images_data.append(frame_base64)
+            
+            if len(images_data) == 1:
+                logger.info(f"single frame base64 size: {len(frame_base64) / 1024:.2f} KB")
         
         cap.release()
         logger.info(f"extracted {len(images_data)} frames from video, duration: {duration}s")

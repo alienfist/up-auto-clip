@@ -4,6 +4,7 @@
 import os
 import cv2
 import time
+import json
 import ffmpeg
 import subprocess
 import numpy as np
@@ -55,14 +56,16 @@ def get_video_duration(video_path: str, unit: str = 'seconds') -> float | None:
         return None
 
 
-def split_video_by_scenes(video_path: str, output_folder: str = None, threshold: int = 30, downscale_factor: int = 1, split_video: bool = True):
+def split_video_by_scenes(video_path: str, output_folder: str = None, video_timeline_json_path: str = None, threshold: int = 30, downscale_factor: int = 1, split_video: bool = True, regenerate_timeline: bool = False):
     """split video by scenes
     Args:
         video_path (str): video path
         output_folder (str, optional): output folder. Defaults to None.
+        video_timeline_json_path (str, optional): video timeline json path. Defaults to None.
         threshold (int, optional): threshold. Defaults to 30.
         downscale_factor (int, optional): downscale factor. Defaults to 1.
         split_video (bool, optional): split video. Defaults to True.
+        regenerate_timeline (bool, optional): regenerate timeline. Defaults to False.
     Returns:
         List[tuple] | None: scene timeline list
     """
@@ -78,12 +81,19 @@ def split_video_by_scenes(video_path: str, output_folder: str = None, threshold:
         return None
 
     if not output_folder:
-        output_folder = f"{OUTPUT_DIR}/{video_name}_clip/"
+        output_folder = f"{TEMP_DIR}/{video_name}_clip/"
+    if not output_folder.endswith('/'):
+        output_folder += '/'
     os.makedirs(output_folder, exist_ok=True)
 
-    split_timeline_txt = f"{output_folder}split_timeline.txt"
-    if os.path.isfile(split_timeline_txt):
-        os.remove(split_timeline_txt)
+    if not video_timeline_json_path:
+        video_timeline_json_path = f"{output_folder}video_timeline.json"
+
+    if os.path.isfile(video_timeline_json_path):
+        if regenerate_timeline:
+            os.remove(video_timeline_json_path)
+        else:
+            return video_timeline_json_path
 
     try:
         video_manager = VideoManager([video_path])
@@ -97,17 +107,31 @@ def split_video_by_scenes(video_path: str, output_folder: str = None, threshold:
         if not scene_timeline_list:
             logger.warning("no scene timeline found")
             return []
-
+        else:
+            video_timeline_list = []
+            for scene_timeline in scene_timeline_list:
+                scene_timeline = {
+                    "start_time": scene_timeline[0].get_timecode(),
+                    "end_time": scene_timeline[1].get_timecode(),
+                    "start_frame": scene_timeline[0].get_frames(),
+                    "end_frame": scene_timeline[1].get_frames(),
+                }
+                video_timeline_list.append(scene_timeline)
+      
         if split_video:
             split_video_ffmpeg(video_path, scene_timeline_list, output_folder, show_progress=True)
-            logger.info(f"video split success, scene count: {len(scene_timeline_list)}")
-        else:
-            logger.info(f"video analysis success, scene count: {len(scene_timeline_list)}")
-        for scene_timeline in scene_timeline_list:
-            with open(split_timeline_txt, "a", encoding="utf-8") as f:
-                f.write(str(scene_timeline)+"\n")
-        return split_timeline_txt
+            split_video_file_list = os.listdir(output_folder)
+            print(split_video_file_list)
+            if len(split_video_file_list) != len(video_timeline_list):
+                logger.error(f"split video count not equal scene count, split video count: {len(split_video_file_list)}, scene count: {len(video_timeline_list)}")
+                return None
+            for i, v in enumerate(video_timeline_list):
+                v.update({"video_name": split_video_file_list[i]})
 
+        with open(video_timeline_json_path, "w", encoding="utf-8") as f:
+            f.write(json.dumps(video_timeline_list, ensure_ascii=False, indent=2))
+        logger.info(f"video split success, scene count: {len(scene_timeline_list)}")
+        return video_timeline_json_path
     except Exception as e:
         logger.error(f"video process error: {str(e)}")
         return None
