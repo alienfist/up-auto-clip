@@ -7,7 +7,8 @@ import ollama
 import json
 import base64
 from utils.common import retry_decorator
-from config import OLLAMA_HOST, OLLAMA_VISION_MODEL, OLLAMA_CHAT_MODEL, DEFAULT_PROMPT, DEFAULT_LANGUAGE
+from config import OLLAMA_HOST, OLLAMA_VISION_MODEL, OLLAMA_CHAT_MODEL, DEFAULT_LANGUAGE
+from prompt import DEFAULT_PROMPT
 from logger import logger
 
 
