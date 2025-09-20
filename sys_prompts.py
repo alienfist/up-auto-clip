@@ -1,8 +1,13 @@
 # default prompt
 DEFAULT_PROMPT = {
-    "role_desc": {
+    "video_edit_role_desc": {
         "zh": """你是一个专业的视频编辑。""",
         "en": """You are a professional video editor."""
+    },
+
+    "screenwriter_role_desc": {
+        "zh": """你是一个专业的短视频编辑和脚本策划师，擅长根据视频内容创作吸引人的短视频脚本。""",
+        "en": """You are a professional short video editor and script planner, skilled at creating engaging short video scripts based on video content."""
     },
     
     "one_frame": {

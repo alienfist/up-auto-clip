@@ -25,7 +25,7 @@ def analyze_image(image_path: str, prompt=None, role_desc=None):
     """
     try:
         if not role_desc:
-            role_desc = DEFAULT_PROMPT["role_desc"][DEFAULT_LANGUAGE]
+            role_desc = DEFAULT_PROMPT["video_edit_role_desc"][DEFAULT_LANGUAGE]
         
         if not os.path.isfile(image_path):
             logger.error(f"image not exist:{image_path}")
@@ -75,7 +75,7 @@ def analyze_multi_images(images_data: list, prompt=None, role_desc=None):
     """
     try:
         if not role_desc:
-            role_desc = DEFAULT_PROMPT["role_desc"][DEFAULT_LANGUAGE]
+            role_desc = DEFAULT_PROMPT["video_edit_role_desc"][DEFAULT_LANGUAGE]
         
         if not prompt:
             prompt = DEFAULT_PROMPT["multi_frame"][DEFAULT_LANGUAGE]
@@ -143,7 +143,7 @@ def get_gpt_response(prompt, response_format='', role_desc=None):
     """
     try:
         if not role_desc:
-            role_desc = DEFAULT_PROMPT["role_desc"][DEFAULT_LANGUAGE]
+            role_desc = DEFAULT_PROMPT["video_edit_role_desc"][DEFAULT_LANGUAGE]
         
         response = client.chat(
             model=OLLAMA_CHAT_MODEL,

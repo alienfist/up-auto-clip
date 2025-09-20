@@ -43,17 +43,6 @@ ollama run qwen2.5vl
 ollama run qwen3:14b
 ```
 
-# Background Music API Configuration
-### Jamendo
-- **Registration**: https://developer.jamendo.com/
-- **Configuration**: Need to obtain Client ID
-- **Features**: High-quality music, rich categories
-
-### Freesound
-- **Registration**: https://freesound.org/apiv2/
-- **Configuration**: Need to obtain API Key
-- **Features**: Rich sound effects, suitable for short audio
-
 ## 🚀 Quick Start
 
 ### Environment Setup
@@ -87,13 +76,11 @@ up-auto-clip/
 ├── Readme.md        # English documentation
 ├── Readme_zh.md     # Chinese documentation
 ├── analysisi_video.py # Video analysis script
+├── sys_prompts.py   # System prompts for video analysis
 ├── config.py        # Configuration file
 ├── logger.py        # Logging module
 ├── main.py          # Main program entry
 ├── requirements.txt # Dependencies list
-├── test/            # Test modules
-│   ├── test_image_api.py # Image API tests
-│   └── test_music_api.py # Music API tests
 └── utils/           # Utility modules
     ├── __init__.py  # Package initialization
     ├── audio_tool.py # Audio processing tools
@@ -104,6 +91,17 @@ up-auto-clip/
     ├── tts_tool.py  # Text-to-speech tools
     └── video_tool.py # Video processing tools
 ```
+
+# Background Music API Configuration
+### Jamendo
+- **Registration**: https://developer.jamendo.com/
+- **Configuration**: Need to obtain Client ID
+- **Features**: High-quality music, rich categories
+
+### Freesound
+- **Registration**: https://freesound.org/apiv2/
+- **Configuration**: Need to obtain API Key
+- **Features**: Rich sound effects, suitable for short audio
 
 ## 📄 License
 

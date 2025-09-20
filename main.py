@@ -53,7 +53,7 @@ def preprocess_video_segment(video_path, video_segment_info_json_path=None):
 def get_video_script(video_segment_info_json_path, video_script_json_path=None):
     with open(video_segment_info_json_path, 'r', encoding='utf-8') as f:
         video_segment_info_list = f.read()
-    role_desc = "你是一个专业的短视频编辑和脚本策划师，擅长根据视频内容创作吸引人的短视频脚本。"
+    role_desc = DEFAULT_PROMPT['screenwriter_role_desc'][DEFAULT_LANGUAGE]
     prompt = DEFAULT_PROMPT['video_script'][DEFAULT_LANGUAGE].format(video_segment_info_list=video_segment_info_list)
     class VideoClip(BaseModel):
         start: float
