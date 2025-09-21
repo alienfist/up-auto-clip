@@ -27,7 +27,7 @@ def generate_tts(text, voice="zh-CN-XiaoxiaoNeural", output=None, rate="+0%", pi
         
         # save audio file
         with open(output, "wb") as audio_file:
-            for chunk in communicate.stream_sync:
+            for chunk in communicate.stream_sync():
                 if chunk["type"] == "audio":
                     audio_file.write(chunk["data"])
                 elif chunk["type"] in ["WordBoundary", "SentenceBoundary"]:

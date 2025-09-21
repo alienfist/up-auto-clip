@@ -70,11 +70,11 @@ def ms_to_str(ms):
         return None
 
 
-def get_md5(text, num=20):
+def get_md5(text, num=16):
     """md5 string
     Args:
         text (str): text
-        num (int, optional): num. Defaults to 20.
+        num (int, optional): num. Defaults to 16.
     Returns:
         str: md5
     """
@@ -83,7 +83,7 @@ def get_md5(text, num=20):
         res = m[0:num]
         return res
     except Exception as e:
-        print(e)
+        print(f"get_md5 error: {e}")
         time_str = datetime.now().strftime("%Y%m%d%H%M%s")
         res = time_str[:num]
         return res

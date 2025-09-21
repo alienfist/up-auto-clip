@@ -40,12 +40,12 @@ DEFAULT_PROMPT = {
 
             分析要求：
             1. 观察画面中的动态变化、人物动作、场景转换
-            2. 识别主要元素：人物、物体、环境、动作
+            2. 识别画面主要元素：人物、动物、机器、物体、自然环境、动作
             3. 注意镜头运动：推拉摇移、景别变化
             4. 捕捉情感氛围和视觉风格
 
             返回字段：
-            - desc: 详细描述视频内容，包括场景、人物、动作、变化过程（150-200字，中文）
+            - desc: 详细描述视频内容，包括场景、人物、动作、变化过程（150-300字，中文）
             - tag: 精确的标签列表，必须包含以下类别（中文）：
             * 镜头类型：[特写/近景/中景/远景/全景]
             * 主体对象：[人物/动物/物体/建筑等]
@@ -95,6 +95,9 @@ DEFAULT_PROMPT = {
             3. 时间安排要紧凑，节奏要快
             4. 为每个片段提供具有感染力的文本用于配音
             5. 如果有必要，可以为片段提供文本用于字幕
+            6. 关于视觉风格的描述不要出现在脚本中，只关注视频内容的描述
+            7. 未必完全按照时间顺序排列视频分段，根据视频内容的重要性和吸引力，调整片段的顺序
+            8. 视频的片头很重要
             
             **重要：请严格按照JSON格式输出，不要包含任何其他文字、解释或markdown标记**
             
@@ -117,6 +120,7 @@ DEFAULT_PROMPT = {
             3. Keep timing tight with fast-paced rhythm
             4. Provide compelling text for voiceover for each segment
             5. If necessary, provide text for subtitles for segments
+            6. Do not include visual style descriptions in the script, only focus on video content descriptions
             
             **Important: Please output strictly in JSON format, without any other text, explanations, or markdown markers**
             

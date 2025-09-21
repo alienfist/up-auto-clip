@@ -12,7 +12,7 @@ from sys_prompts import DEFAULT_PROMPT
 from logger import logger
 
 
-client = ollama.Client(host=OLLAMA_HOST, timeout=60)
+client = ollama.Client(host=OLLAMA_HOST, timeout=30)
 
 
 @retry_decorator(max_retries=3, delay=2)
