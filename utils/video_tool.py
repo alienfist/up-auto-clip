@@ -469,7 +469,6 @@ def merge_video_audio(input_video_path, input_audio_path, output_video_path):
         temp_looped_video = None
         # if audio duration is longer than video duration, loop video to match audio duration
         if audio_duration > video_duration:
-            logger.info("Audio is longer than video, looping video to match audio duration")
             # calculate loop count
             loop_count = int(audio_duration / video_duration) + 1
             # create temp looped video file
@@ -480,7 +479,6 @@ def merge_video_audio(input_video_path, input_audio_path, output_video_path):
             
             # use ffmpeg to loop video
             loop_cmd = f'ffmpeg -stream_loop {loop_count} -i "{input_video_path}" -t {audio_duration} -c copy -y "{temp_looped_video}"'
-            logger.info(f"Looping video: {loop_cmd}")
             loop_result = subprocess.run(loop_cmd, shell=True, capture_output=True, text=True)
             
             if loop_result.returncode != 0:
@@ -491,10 +489,8 @@ def merge_video_audio(input_video_path, input_audio_path, output_video_path):
             merge_cmd = f'ffmpeg -i "{temp_looped_video}" -i "{input_audio_path}" -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -y "{output_video_path}"'
         else:
             # video is longer than or equal to audio, merge directly, with audio length as the duration
-            logger.info("Video is longer than or equal to audio, merging directly")
             merge_cmd = f'ffmpeg -i "{input_video_path}" -i "{input_audio_path}" -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -t {audio_duration} -y "{output_video_path}"'
         
-        logger.info(f"Merging video and audio: {merge_cmd}")
         merge_result = subprocess.run(merge_cmd, shell=True, capture_output=True, text=True)
         
         # if created temp looped video file, remove it
@@ -505,9 +501,9 @@ def merge_video_audio(input_video_path, input_audio_path, output_video_path):
             except Exception as cleanup_e:
                 logger.warning(f"Failed to cleanup temporary file: {cleanup_e}")
         
-        if merge_result.returncode == 0 and os.path.exists(output_path):
-            logger.info(f"Video and audio merged successfully: {output_path}")
-            return output_path
+        if merge_result.returncode == 0 and os.path.exists(output_video_path):
+            logger.info(f"Video and audio merged successfully: {output_video_path}")
+            return output_video_path
         else:
             logger.error(f"Failed to merge video and audio: {merge_result.stderr}")
             return None
