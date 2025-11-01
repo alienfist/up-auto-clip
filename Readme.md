@@ -44,8 +44,8 @@ The project is not yet completed, and the project code is currently being organi
 
 ### Vision Model
 ```bash
-# Install qwen3-vl:8b vision model
-ollama run qwen3-vl:8b
+# Install qwen2.5vl:7b vision model
+ollama run qwen2.5vl:7b
 ```
 
 ### Dialogue Model

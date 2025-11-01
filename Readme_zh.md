@@ -40,8 +40,8 @@
 
 ### 视觉模型
 ```bash
-# 安装 qwen3-vl:8b 视觉模型
-ollama run qwen3-vl:8b
+# 安装 qwen2.5vl:7b 视觉模型
+ollama run qwen2.5vl:7b
 ```
 
 ### 对话模型

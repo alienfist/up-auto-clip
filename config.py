@@ -12,7 +12,7 @@ TEMP_DIR = f"{PROJECT_FOLDER}temp/"
 RESOURCE_DIR = f"{PROJECT_FOLDER}resource/"
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
-OLLAMA_VISION_MODEL = os.getenv("OLLAMA_VISION_MODEL", "qwen3-vl:8b")
+OLLAMA_VISION_MODEL = os.getenv("OLLAMA_VISION_MODEL", "qwen2.5vl:7b")
 OLLAMA_CHAT_MODEL = os.getenv("OLLAMA_CHAT_MODEL", "qwen3:14b")
 
 # Ollama模型参数配置
