@@ -12,9 +12,16 @@
 - [√] 逐个分析场景视频内容
 - [√] 自动生成视频描述和标签，存储为JSON格式
 
-### 📝 第二步：智能文案生成 ⏳
+### 📝 第二步：智能文案生成 ✅
 - [√] 根据指定主题，利用对话模型生成完整文案
 - [√] 通过文案内容与视频片段描述和标签进行智能匹配
+- [√] **新功能**: 多视角视频生成 - 从一个视频源生成10个不同风格的视频
+  - 🎭 情感共鸣视角
+  - 📚 知识科普视角
+  - 😄 娱乐搞笑视角
+  - 💪 励志激励视角
+  - 🎨 美学艺术视角
+  - 🔥 热点话题视角
 - [ ] 自动批量生成视频拼接方案
 
 ### 🎵 第三步：自动化后期制作 ⏳
@@ -33,8 +40,8 @@
 
 ### 视觉模型
 ```bash
-# 安装 qwen2.5vl 视觉模型
-ollama run qwen2.5vl
+# 安装 qwen3-vl:8b 视觉模型
+ollama run qwen3-vl:8b
 ```
 
 ### 对话模型
@@ -42,6 +49,31 @@ ollama run qwen2.5vl
 # 安装 qwen3:14b 对话模型
 ollama run qwen3:14b
 ```
+
+## 🆕 多视角视频生成
+
+从单个视频源生成多个不同风格和视角的视频：
+
+```python
+from main import AutoClip
+
+# 初始化
+auto_clip = AutoClip(video_path="your_video.mp4")
+
+# 视频预处理
+auto_clip.preprocess_video_segment()
+
+# 生成所有10个视角的视频
+results = auto_clip.generate_multiple_perspective_videos()
+
+# 或者生成指定视角的视频
+selected = ['emotional', 'entertaining', 'inspirational']
+results = auto_clip.generate_multiple_perspective_videos(selected)
+```
+
+**演示脚本**: 运行 `python demo_multi_perspective.py` 查看完整演示。
+
+**详细文档**: 查看 [MULTI_PERSPECTIVE_README.md](./MULTI_PERSPECTIVE_README.md) 获取完整使用指南。
 
 ## 🚀 快速开始
 

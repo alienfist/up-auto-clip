@@ -12,9 +12,20 @@ The project is not yet completed, and the project code is currently being organi
 - [√] Analyze each scene video individually
 - [√] Generate video descriptions and tags, stored in JSON format
 
-### 📝 Step 2: Intelligent Script Generation ⏳
+### 📝 Step 2: Intelligent Script Generation ✅
 - [√] Generate complete scripts based on specified themes using dialogue models
 - [√] Intelligently match script content with video segment descriptions and tags
+- [√] **NEW**: Multi-perspective video generation - create 10 different style videos from one source
+    - 🌟 Default/general purpose perspective
+    - 🎭 Emotional resonance perspective
+    - 📚 Educational/knowledge sharing perspective  
+    - 🎪 Entertainment/comedy perspective
+    - 💪 Inspirational/motivational perspective
+    - 🎨 Aesthetic/artistic perspective
+    - 🔥 Trending topics perspective
+    - 🏠 Lifestyle perspective
+    - 💼 Professional skills perspective
+    - 📖 Storytelling perspective
 - [ ] Automatically generate a lot of video splicing solutions
 
 ### 🎵 Step 3: Automated Post-Production ⏳
@@ -33,8 +44,8 @@ The project is not yet completed, and the project code is currently being organi
 
 ### Vision Model
 ```bash
-# Install qwen2.5vl vision model
-ollama run qwen2.5vl
+# Install qwen3-vl:8b vision model
+ollama run qwen3-vl:8b
 ```
 
 ### Dialogue Model
@@ -42,6 +53,31 @@ ollama run qwen2.5vl
 # Install qwen3:14b dialogue model
 ollama run qwen3:14b
 ```
+
+## 🆕 Multi-Perspective Video Generation
+
+Generate multiple videos with different styles and perspectives from a single source video:
+
+```python
+from main import AutoClip
+
+# Initialize
+auto_clip = AutoClip(video_path="your_video.mp4")
+
+# Preprocess video
+auto_clip.preprocess_video_segment()
+
+# Generate all 10 perspective videos
+results = auto_clip.generate_multiple_perspective_videos()
+
+# Or generate specific perspectives
+selected = ['emotional', 'entertaining', 'inspirational']
+results = auto_clip.generate_multiple_perspective_videos(selected)
+```
+
+**Demo Script**: Run `python demo_multi_perspective.py` for a complete demonstration.
+
+**Detailed Documentation**: See [MULTI_PERSPECTIVE_README.md](./MULTI_PERSPECTIVE_README.md) for comprehensive usage guide.
 
 ## 🚀 Quick Start
 

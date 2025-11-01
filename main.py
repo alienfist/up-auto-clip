@@ -75,24 +75,35 @@ class AutoClip(BaseModel):
             f.write(json.dumps(video_segment_info_list, ensure_ascii=False, indent=2))
         return True
             
-    def generate_video_scripts(self):
+    def generate_video_scripts(self, perspective=None):
         if not os.path.exists(self.video_segment_info_json_path):
             logger.error(f"video segment info json file {self.video_segment_info_json_path} not exist, skip")
             return None
 
-        if os.path.exists(self.video_script_json_path):
+        # 如果指定了视角，使用带视角的文件名
+        script_file_path = self.video_script_json_path
+        if perspective:
+            script_file_path = self.video_script_json_path.replace('.json', f'_{perspective}.json')
+
+        if os.path.exists(script_file_path):
             if self.re_generate_scripts:
-                os.remove(self.video_script_json_path)
+                os.remove(script_file_path)
             else:
-                with open(self.video_script_json_path, 'r', encoding='utf-8') as f:
+                with open(script_file_path, 'r', encoding='utf-8') as f:
                     video_script = json.loads(f.read())
                 if video_script:
                     return video_script
             
         with open(self.video_segment_info_json_path, 'r', encoding='utf-8') as f:
             video_segment_info_list = json.loads(f.read())
+        
         role_desc = DEFAULT_PROMPT['screenwriter_role_desc'][DEFAULT_LANGUAGE]
-        prompt = DEFAULT_PROMPT['video_script'][DEFAULT_LANGUAGE].format(video_segment_info_list=json.dumps(video_segment_info_list, ensure_ascii=False, indent=2))
+        
+        # 根据视角选择不同的提示词
+        if perspective:
+            prompt = self._get_perspective_prompt(video_segment_info_list, perspective)
+        else:
+            prompt = DEFAULT_PROMPT['video_script'][DEFAULT_LANGUAGE].format(video_segment_info_list=json.dumps(video_segment_info_list, ensure_ascii=False, indent=2))
         
         # response class
         class VideoClip(BaseModel):
@@ -106,7 +117,7 @@ class AutoClip(BaseModel):
 
         script = get_gpt_response(prompt, response_format=VideoClipArray.model_json_schema(), role_desc=role_desc)
         if script:
-            with open(self.video_script_json_path, 'w', encoding='utf-8') as f:
+            with open(script_file_path, 'w', encoding='utf-8') as f:
                 f.write(json.dumps(script['video_clips'], ensure_ascii=False, indent=2))
             return script['video_clips']
         return None
@@ -169,24 +180,33 @@ class AutoClip(BaseModel):
             logger.error(f"Error processing video segment {video_script.get('start', 'unknown')}: {e}")
             return video_script
 
-    def generate_segment_video(self):
+    def generate_segment_video(self, perspective=None):
         """
         generate segment video by video script 
         with concurrent processing: TTS + video cutting + merging
         """
-        if not os.path.exists(self.video_script_json_path):
-            logger.error(f"video script exist, skip")
+        # 根据视角选择对应的脚本文件
+        script_file_path = self.video_script_json_path
+        if perspective:
+            script_file_path = self.video_script_json_path.replace('.json', f'_{perspective}.json')
+            
+        if not os.path.exists(script_file_path):
+            logger.error(f"video script file {script_file_path} not exist, skip")
             return None
         
-        with open(self.video_script_json_path, 'r', encoding='utf-8') as f:
+        with open(script_file_path, 'r', encoding='utf-8') as f:
             video_scripts = json.load(f)
         
+        # 为不同视角创建不同的输出文件夹
         output_folder = f"{self.temp_dir}video_segment/"
+        if perspective:
+            output_folder = f"{self.temp_dir}video_segment_{perspective}/"
+            
         if os.path.isdir(output_folder):
             shutil.rmtree(output_folder, ignore_errors=True)
         os.makedirs(output_folder, exist_ok=True)
         
-        logger.info(f"Starting concurrent processing for {len(video_scripts)} segments")
+        logger.info(f"Starting concurrent processing for {len(video_scripts)} segments with perspective: {perspective or 'default'}")
         with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
             future_to_script = {
                 executor.submit(self.generate_segment_video_by_script, video_script, index, output_folder): video_script
@@ -207,26 +227,95 @@ class AutoClip(BaseModel):
         logger.info(f"Completed processing for all {len(processed_scripts)} segments")
         return processed_scripts
     
+    def _get_perspective_prompt(self, video_segment_info_list, perspective):
+        """根据不同视角生成对应的提示词"""
+        from sys_prompts import MULTI_PERSPECTIVE_PROMPTS
+        
+        if perspective in MULTI_PERSPECTIVE_PROMPTS:
+            return MULTI_PERSPECTIVE_PROMPTS[perspective][DEFAULT_LANGUAGE].format(
+                video_segment_info_list=json.dumps(video_segment_info_list, ensure_ascii=False, indent=2)
+            )
+        else:
+            # 默认使用原有的提示词
+            return DEFAULT_PROMPT['video_script'][DEFAULT_LANGUAGE].format(
+                video_segment_info_list=json.dumps(video_segment_info_list, ensure_ascii=False, indent=2)
+            )
+    
+    def generate_multiple_perspective_videos(self, perspectives=None):
+        """生成多个不同视角的视频"""
+        if perspectives is None:
+            perspectives = ['default', 'emotional', 'educational', 'entertaining', 'inspirational', 'aesthetic', 'trending', 'lifestyle', 'professional', 'storytelling']
+        
+        results = []
+        
+        for perspective in perspectives:
+            logger.info(f"Processing perspective: {perspective}")
+            
+            # 1. 生成该视角的脚本
+            video_scripts = self.generate_video_scripts(perspective=perspective)
+            if not video_scripts:
+                logger.error(f"Failed to generate scripts for perspective: {perspective}")
+                continue
+            
+            # 2. 生成该视角的视频片段
+            processed_scripts = self.generate_segment_video(perspective=perspective)
+            if not processed_scripts:
+                logger.error(f"Failed to generate segments for perspective: {perspective}")
+                continue
+            
+            # 3. 合并该视角的视频
+            segments_video_list = [s['final_video_path'] for s in processed_scripts if 'final_video_path' in s]
+            segments_video_list.sort()
+            
+            if segments_video_list:
+                output_video_path = f"{self.temp_dir}{time.strftime('%Y%m%d%H%M%S', time.localtime())}_{perspective}.mp4"
+                res_concat_video = concat_video(segments_video_list, output_video_path)
+                
+                if res_concat_video:
+                    results.append({
+                        'perspective': perspective,
+                        'video_path': output_video_path,
+                        'segments_count': len(segments_video_list)
+                    })
+                    logger.info(f"Successfully generated {perspective} video: {output_video_path}")
+                    
+                    # 清理临时文件
+                    shutil.rmtree(f"{self.temp_dir}video_segment_{perspective}/", ignore_errors=True)
+                else:
+                    logger.error(f"Failed to concat video for perspective: {perspective}")
+            else:
+                logger.error(f"No valid segments found for perspective: {perspective}")
+        
+        return results
+    
     
 if __name__ == "__main__":
     auto_clip = AutoClip(video_path = f"{TEMP_DIR}test.webm")
     
     # 1. preprocess video segment: get video segmemt info 
     res_preprocess_video_segment = auto_clip.preprocess_video_segment()
-    print(res_preprocess_video_segment)
-
-    # 2. generate video script by video segment info
-    video_scripts = auto_clip.generate_video_scripts()
-    print(video_scripts)
-
-    # 3. generate segment video by video script
-    processed_scripts = auto_clip.generate_segment_video()
+    print(f"视频预处理结果: {res_preprocess_video_segment}")
     
-    # 4. concat video segment
-    segments_video_list = [s['final_video_path'] for s in processed_scripts if 'final_video_path' in s]
-    segments_video_list.sort()
-    output_video_path = f"{auto_clip.temp_dir}{time.strftime('%Y%m%d%H%M%S', time.localtime())}.mp4"
-    res_concat_video = concat_video(segments_video_list, output_video_path)
-    if res_concat_video:
-        print(f"final video path: {output_video_path}")
-        shutil.rmtree(f"{auto_clip.temp_dir}video_segment/", ignore_errors=True)
+    if res_preprocess_video_segment:
+        # 2. 生成多个不同视角的视频（默认生成6个视角）
+        print("开始生成多视角视频...")
+        
+        # 可以自定义视角列表，这里使用默认的6个视角
+        # perspectives = ['emotional', 'educational', 'entertaining', 'inspirational', 'aesthetic']
+        # results = auto_clip.generate_multiple_perspective_videos(perspectives)
+        
+        results = auto_clip.generate_multiple_perspective_videos()
+        
+        # 3. 输出结果
+        print(f"\n=== 多视角视频生成完成 ===")
+        print(f"成功生成 {len(results)} 个不同视角的视频:")
+        
+        for i, result in enumerate(results, 1):
+            print(f"{i}. 【{result['perspective']}】视角 - {result['video_path']} (包含{result['segments_count']}个片段)")
+        
+        if results:
+            print(f"\n所有视频已保存到: {auto_clip.temp_dir}")
+        else:
+            print("\n未能成功生成任何视频，请检查日志")
+    else:
+        print("视频预处理失败，无法继续生成视频")
