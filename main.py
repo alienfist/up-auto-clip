@@ -17,7 +17,7 @@ from utils.common import get_md5
 from utils.gpt_tool import get_gpt_response
 from analysisi_video import analyze_video_multi_frames
 from config import TEMP_DIR, DEFAULT_LANGUAGE
-from sys_prompts import DEFAULT_PROMPT
+from sys_prompts import DEFAULT_PROMPT, MULTI_PERSPECTIVE_PROMPTS
 from logger import logger
 
 
@@ -229,8 +229,6 @@ class AutoClip(BaseModel):
     
     def _get_perspective_prompt(self, video_segment_info_list, perspective):
         """根据不同视角生成对应的提示词"""
-        from sys_prompts import MULTI_PERSPECTIVE_PROMPTS
-        
         if perspective in MULTI_PERSPECTIVE_PROMPTS:
             return MULTI_PERSPECTIVE_PROMPTS[perspective][DEFAULT_LANGUAGE].format(
                 video_segment_info_list=json.dumps(video_segment_info_list, ensure_ascii=False, indent=2)

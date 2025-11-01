@@ -10,9 +10,10 @@ from utils.common import retry_decorator
 from config import OLLAMA_HOST, OLLAMA_VISION_MODEL, OLLAMA_CHAT_MODEL, DEFAULT_LANGUAGE, OLLAMA_OPTIONS
 from sys_prompts import DEFAULT_PROMPT
 from logger import logger
+from config import OLLAMA_TIMEOUT
 
 
-client = ollama.Client(host=OLLAMA_HOST, timeout=30)
+client = ollama.Client(host=OLLAMA_HOST, timeout=OLLAMA_TIMEOUT)
 
 
 @retry_decorator(max_retries=3, delay=2)

@@ -23,6 +23,8 @@ OLLAMA_OPTIONS = {
     "top_k": int(os.getenv("OLLAMA_TOP_K", "40")),
 }
 
+OLLAMA_TIMEOUT = int(os.getenv("OLLAMA_TIMEOUT", "60"))
+
 # default video language
 DEFAULT_LANGUAGE = os.getenv("DEFAULT_LANGUAGE", "zh")
 
